@@ -3,28 +3,25 @@
 <script type="text/javascript"
 	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular.min.js"></script>
 
+<script type="text/javascript"
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular-animate.js"></script>
+
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet"
-	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
-	integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
-	crossorigin="anonymous">
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 
 <!-- Optional theme -->
 <link rel="stylesheet"
-	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
-	integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
-	crossorigin="anonymous">
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
 
 <!-- Latest compiled and minified JavaScript -->
 <script
 	src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 
 <script
-	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
-	integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
-	crossorigin="anonymous"></script>
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
-<body ng-app="mainModule" ng-controller="mainController">
+<body data-ng-app="mainModule" data-ng-controller="mainController">
 
 	<nav class="navbar navbar-inverse navbar-fixed-top">
 		<div class="container-fluid">
@@ -42,18 +39,64 @@
 		</div>
 	</nav>
 
-	<div class="row">
-		<div class="col-sm-4"></div>
-		<ul class="tree-container">
-			<li style="margin: 5px; list-style: none;"
-				ng-repeat="d in getChildren('root')"
-				ng-include="'tree/tree_item.html'"></li>
-		</ul>
-		<div class="col-sm-8"></div>
+	<div class="container-fluid">
+		<div class="row" style="margin-top: 55px;">
+			<div class="col-sm-3">
+				<div id="tree-container">
+					<div style="margin: 5px;" data-ng-repeat="d in getChildren()"
+						data-ng-include="'ui/tree_item.html'" data-drag="d"
+						data-dragStyle="drag" data-drop="d"
+						data-dropStyle="drop"></div>
+				</div>
+			</div>
+			<div class="col-sm-9">
+				<div data-ng-include="'ui/folder_content.html'"></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Upload popup -->
+	<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog"
+		aria-labelledby="uploadModalLabel">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					<h4 class="modal-title" id="myModalLabel">Charger des fichiers</h4>
+				</div>
+				<div class="modal-body">
+					<input onchange="angular.element(this).scope().fileAdded(this)"
+						type="file" multiple />
+
+					<div style="overflow: auto;">
+						<div data-ng-repeat="file in uploadInProgress"
+							class="alert alert-warning" role="alert">
+							{{file.name}} {{file.size | number}}o (){{file.toPath}})
+							<progress id="{{file.idProgress}}" value="0"></progress>
+						</div>
+
+						<div data-ng-repeat="file in filesToUpload"
+							class="alert alert-info" role="alert">{{file.name}}
+							{{file.size | number}}o (){{file.toPath}})</div>
+
+						<div data-ng-repeat="file in uploadedFiles"
+							class="alert alert-success" role="alert">{{file.name}}
+							{{file.size | number}}o ({{file.toPath}})</div>
+					</div>
+				</div>
+
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<script type="text/javascript" src="js/main/main.js"></script>
-	<script type="text/javascript" src="js/main/main-controller.js"></script>
 	<script type="text/javascript" src="js/main/main-service.js"></script>
+	<script type="text/javascript" src="js/main/main-controller.js"></script>
 </body>
 </html>

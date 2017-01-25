@@ -1,18 +1,25 @@
 package org.optimus.amazon.backup.server.dto;
 
 import java.io.Serializable;
-
-import org.optimus.amazon.backup.server.dto.FolderDto.STATE;
+import java.util.Date;
 
 public class FileDto implements Serializable {
 
 	private static final long serialVersionUID = 1666220170870197188L;
 
+	public enum STATE {
+		LOCAL, REMOTE, BOTH
+	};
+
 	private String name;
-	
+
 	private String path;
 
 	private long size;
+
+	private Date dateCreate;
+
+	private Date dateUpdate;
 
 	private STATE state;
 
@@ -46,6 +53,22 @@ public class FileDto implements Serializable {
 
 	public void setPath(String path) {
 		this.path = path;
+	}
+
+	public Date getDateCreate() {
+		return dateCreate;
+	}
+
+	public void setDateCreate(Date dateCreate) {
+		this.dateCreate = dateCreate;
+	}
+
+	public Date getDateUpdate() {
+		return dateUpdate;
+	}
+
+	public void setDateUpdate(Date dateUpdate) {
+		this.dateUpdate = dateUpdate;
 	}
 
 }

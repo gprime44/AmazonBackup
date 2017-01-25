@@ -2,7 +2,6 @@ package org.optimus.amazon.backup.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -14,13 +13,13 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.UserDetailsService;
 
 @SpringBootApplication
 @Configuration
 @EnableAsync
 @EnableWebSecurity
-@ComponentScan(basePackages = { "org.optimus.amazon.backup.server.resources", "org.optimus.amazon.backup.server.services" })
+@ComponentScan(basePackages = { "org.optimus.amazon.backup.server.resources",
+		"org.optimus.amazon.backup.server.services" })
 public class AmazonBackupApplication extends WebSecurityConfigurerAdapter {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AmazonBackupApplication.class);
@@ -40,7 +39,11 @@ public class AmazonBackupApplication extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.authorizeRequests().anyRequest().authenticated().and().httpBasic();
+		http //
+				.authorizeRequests().anyRequest().authenticated().and() //
+				.httpBasic().and() //
+				.headers().frameOptions().sameOrigin().httpStrictTransportSecurity().disable().and() //
+				.csrf().disable();
 	}
 
 	@Override

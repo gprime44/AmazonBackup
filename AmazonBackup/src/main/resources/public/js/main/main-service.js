@@ -1,5 +1,5 @@
 app.service('mainService', function() {
-	
+
 	this.manageUpload = function($scope) {
 		if ($scope.uploadInProgress.length < 5
 				&& $scope.filesToUpload.length > 0) {
@@ -39,5 +39,5 @@ app.service('mainService', function() {
 			manageUpload();
 		});
 	}
-	
+
 });

@@ -45,7 +45,7 @@ public class FileResource extends AbstractResource {
 
 		LOGGER.info("User {} download {}", getUser(), path);
 
-		Path file = fileService.getFile(getUser(), path);
+		Path file = fileService.getFileInGlobalFolder(getUser(), path);
 
 		response.addHeader("Content-Length", String.valueOf(Files.size(file)));
 		response.addHeader("Content-Type", Files.probeContentType(file));
@@ -61,7 +61,7 @@ public class FileResource extends AbstractResource {
 
 		LOGGER.info("User {} get {}", getUser(), path);
 
-		Path file = fileService.getFile(getUser(), path);
+		Path file = fileService.getFileInGlobalFolder(getUser(), path);
 
 		response.addHeader("Content-Length", String.valueOf(Files.size(file)));
 		response.addHeader("Content-Type", Files.probeContentType(file));

@@ -1,13 +1,14 @@
-app.controller("mainController", function($scope, $rootScope, $http, $timeout, mainService) {
-	
+app.controller("mainController", function($scope, $rootScope, $http, $timeout,
+		mainService) {
+
 	$scope.filesToUpload = [];
 	$scope.uploadInProgress = [];
 	$scope.uploadedFiles = [];
-	
+
 	$http.get("/account").then(function(response) {
 		$scope.status = response.data;
 	});
-	
+
 	$rootScope.$on('dropEvent', function(evt, dragged, dropped) {
 		if (dropped.files) {
 			var data = new FormData();
@@ -20,18 +21,18 @@ app.controller("mainController", function($scope, $rootScope, $http, $timeout, m
 			});
 		}
 	});
-	
+
 	$scope.fileAdded = function(e) {
-		$scope.$apply(function () {
+		$scope.$apply(function() {
 
-            for (var i = 0; i < e.files.length; i++) {
-            	var file = e.files[i];
-            	file.toPath = $scope.folder.path;
-                $scope.filesToUpload.push(file)
-            }
+			for (var i = 0; i < e.files.length; i++) {
+				var file = e.files[i];
+				file.toPath = $scope.folder.path;
+				$scope.filesToUpload.push(file)
+			}
 
-            folderService.manageUpload($scope)
-            
-        });
+			folderService.manageUpload($scope)
+
+		});
 	}
 });

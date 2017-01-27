@@ -31,8 +31,11 @@ public class AccountService {
 
 	private final static Logger LOGGER = LoggerFactory.getLogger(AccountService.class);
 
-	@Value("${folder.root}")
-	private String rootFolder;
+	@Value("${folder.local.root}")
+	private String localRootFolder;
+
+	@Value("folder.remote.root")
+	private String remoteRootFolder;
 
 	@Value("${encfs.file}")
 	private String encfsFile;
@@ -57,7 +60,7 @@ public class AccountService {
 
 	public boolean checkUserFolders(String login) throws ServiceException {
 		boolean ret = false;
-		Path rootPath = Paths.get(rootFolder);
+		Path rootPath = Paths.get(localRootFolder);
 		if (!Files.exists(rootPath)) {
 			throw new ServiceException("Folder {} doesn't exsit", rootPath);
 		}
@@ -119,7 +122,7 @@ public class AccountService {
 		cl.addArgument(localGlobalPath.toAbsolutePath().toString());
 
 		LOGGER.debug("Execute : {}", cl.toString());
-		
+
 		try {
 			LOGGER.info("Execution return : {}", new DefaultExecutor().execute(cl));
 		} catch (ExecuteException e) {
@@ -134,12 +137,12 @@ public class AccountService {
 		CommandLine cl = new CommandLine("acd_cli");
 		cl.addArgument("-nl");
 		cl.addArgument("mount");
-		cl.addArgument("--modules='subdir,subdir=/" + login + "'");
+		cl.addArgument("--modules='subdir,subdir=/" + remoteRootFolder + "/" + login + "'");
 		cl.addArgument("--allow-root");
 		cl.addArgument(remoteEncodedPath.toAbsolutePath().toString());
 
 		LOGGER.debug("Execute : {}", cl.toString());
-		
+
 		try {
 			LOGGER.info("Execution return : {}", new DefaultExecutor().execute(cl));
 		} catch (ExecuteException e) {
@@ -158,7 +161,7 @@ public class AccountService {
 		cl.addArgument(decodedFolder.toAbsolutePath().toString());
 
 		LOGGER.debug("Execute : {}", cl.toString());
-		
+
 		Map<String, String> env = new HashMap<>();
 		env.put("ENCFS6_CONFIG", encfsFile);
 		try (OutputStream os = new ByteArrayOutputStream(); InputStream is = new ByteArrayInputStream(encfsPassword.getBytes());) {

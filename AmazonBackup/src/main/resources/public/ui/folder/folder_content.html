@@ -1,0 +1,128 @@
+<div data-ng-show="folder" data-ng-controller="folderController">
+	<div class="page-header">
+		<div class="row">
+			<div class="col-sm-8">
+				<h1>
+					{{folder.name}} <small>{{folder.path}}</small>
+				</h1>
+			</div>
+			<div class="col-sm-4">
+				<div class="pull-right" style="margin-top: 20px">
+					<a data-ng-click="changeDisplay('table')"
+						class="glyphicon glyphicon-th-list folderButton"></a> <a
+						data-ng-click="changeDisplay('picture')"
+						class="glyphicon glyphicon-th folderButton"></a> <a
+						data-ng-click="changeDisplay('carousel')"
+						class="glyphicon glyphicon-picture folderButton"></a> <a
+						data-toggle="modal" data-target="#uploadModal"
+						class="glyphicon glyphicon-upload folderButton"></a> <a
+						data-ng-click="refresh()"
+						class="glyphicon glyphicon-refresh folderButton"></a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div data-ng-show="display=='table'" class="table-responsive">
+		<table class="table table-hover table-striped table-condensed">
+			<thead>
+				<tr>
+					<th data-ng-click="order('name')" style="cursor: pointer;">Nom</th>
+					<th data-ng-click="order('dateCreate')" style="cursor: pointer;">Date
+						de création</th>
+					<th data-ng-click="order('dateUpdate')" style="cursor: pointer;">Date
+						de modification</th>
+					<th data-ng-click="order('size')" style="cursor: pointer;">Taille</th>
+					<th data-ng-click="order('state')" style="cursor: pointer;">Etat</th>
+					<th><i class="glyphicon glyphicon-eye-open"></i></th>
+					<th><i class="glyphicon glyphicon-download-alt"></i></th>
+					<th><i class="glyphicon glyphicon-remove"></i></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr data-ng-repeat="row in foldercontent | orderBy:folderOrderBy"
+					data-drag="row" data-dragStyle="drag" data-drop="row"
+					data-dropStyle="drop">
+					<td><i data-ng-class="getIcon(row)"
+						style="margin-right: 10px;"></i>{{row.name}}</td>
+					<td>{{ row.dateCreate | date }}</td>
+					<td>{{ row.dateUpdate | date }}</td>
+					<td>{{ row.size | number}}</td>
+					<td>{{ row.state }}</td>
+					<td data-toggle="modal" data-target="#myModal"
+						data-ng-click="preview(row)" data-ng-show="canPreview(row)"
+						style="cursor: pointer;"><i
+						class="glyphicon glyphicon-eye-open"></i></td>
+					<td data-ng-show="canDownload(row)" style="cursor: pointer;"><a
+						class="glyphicon glyphicon-download-alt"
+						href="{{downloadUrl(row)}}"></a></td>
+					<td data-ng-click="delete(row)" data-ng-show="canDelete(row)"
+						style="cursor: pointer;"><i
+						class="glyphicon glyphicon-remove"></i></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<div data-ng-show="display=='picture'">
+		<img data-ng-repeat="img in images" data-toggle="modal"
+			data-target="#myModal" data-ng-click="preview(img)"
+			style="cursor: pointer; padding: 5px;" src="{{getUrl(img)}}"
+			height="100px" width="100px"></img>
+	</div>
+
+	<div data-ng-show="display=='carousel'">
+		<div id="carousel-example-generic" class="carousel slide"
+			data-ride="carousel">
+			<!-- Indicators -->
+			<ol class="carousel-indicators">
+				<li data-ng-repeat="img in images"
+					data-target="#carousel-example-generic" data-slide-to="{{$index}}"></li>
+			</ol>
+
+			<!-- Wrapper for slides -->
+			<div class="carousel-inner" role="listbox">
+				<div data-ng-repeat="img in images" class="item"">
+					<img src="{{getUrl(img)}}"></img>
+					<div class="carousel-caption"></div>
+				</div>
+			</div>
+
+			<!-- Controls -->
+			<a class="left carousel-control" href="#carousel-example-generic"
+				role="button" data-slide="prev"> <span
+				class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+				<span class="sr-only">Précédent</span>
+			</a> <a class="right carousel-control" href="#carousel-example-generic"
+				role="button" data-slide="next"> <span
+				class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+				<span class="sr-only">Suivant</span>
+			</a>
+		</div>
+	</div>
+
+	<!-- Preview popup -->
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
+		aria-labelledby="myModalLabel">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					<h4 class="modal-title" id="myModalLabel">{{selectedRow.name}}</h4>
+				</div>
+				<div class="modal-body">
+					<div class="embed-responsive embed-responsive-16by9">
+						<iframe class="embed-responsive-item"
+							src="{{getUrl(selectedRow)}}" height="100%" width="100%"></iframe>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

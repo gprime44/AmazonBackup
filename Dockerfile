@@ -27,4 +27,7 @@ RUN ["mvn", "verify"]
 ADD src /code/src
 RUN ["mvn", "package"]
 
-CMD ["java", "-jar", "/code/target/app.jar"]
+RUN ["mv", "/code/target/app.jar", /app.jar]
+RUN ["rm", "-Rf", "/code", "/.m2"]
+
+CMD ["java", "-jar", "/app.jar"]

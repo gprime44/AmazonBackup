@@ -28,44 +28,19 @@ import org.optimus.amazon.backup.server.dto.FolderDto;
 import org.optimus.amazon.backup.server.exception.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-public class FileService {
+public class FileService extends AbstractService {
 
 	private final static Logger LOGGER = LoggerFactory.getLogger(FileService.class);
 
-	@Value("${folder.root}")
-	private String rootFolder;
-
-	@Value("${folder.local.decoded}")
-	private String localDecodedFolder;
-
-	@Value("${folder.local.encoded}")
-	private String localEncodedFolder;
-
-	@Value("${folder.local.global}")
-	private String localGlobalFolder;
-
-	@Value("${folder.remote.decoded}")
-	private String remoteDecodedFolder;
-
-	@Value("${folder.remote.encoded}")
-	private String remoteEncodedFolder;
-
-	@Value("${encfs.file}")
-	private String encfsFile;
-
-	@Value("${encfs.password}")
-	private String encfsPassword;
-
 	public FolderDto getFolderContent(String login, String folder, boolean withFile) throws ServiceException {
-		Path globalRootFolder = Paths.get(rootFolder).resolve(login).resolve(localGlobalFolder);
-		Path localRootFolder = Paths.get(rootFolder).resolve(login).resolve(localDecodedFolder);
-		Path remoteRootFolder = Paths.get(rootFolder).resolve(login).resolve(remoteDecodedFolder);
+		Path globalRootPath = Paths.get(localRootFolder).resolve(login).resolve(localGlobalFolder);
+		Path localDecodedPath = Paths.get(localRootFolder).resolve(login).resolve(localDecodedFolder);
+		Path remoteRootPath = Paths.get(localRootFolder).resolve(login).resolve(remoteDecodedFolder);
 
 		Path folderToScan = getFileInGlobalFolder(login, folder);
 
@@ -82,8 +57,8 @@ public class FileService {
 		folderDto.setName(folderToScan.getFileName().toString());
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(folderToScan)) {
 			for (Path entry : stream) {
-				boolean isLocal = Files.exists(localRootFolder.resolve(globalRootFolder.relativize(entry)));
-				boolean isRemote = Files.exists(remoteRootFolder.resolve(globalRootFolder.relativize(entry)));
+				boolean isLocal = Files.exists(localDecodedPath.resolve(globalRootPath.relativize(entry)));
+				boolean isRemote = Files.exists(remoteRootPath.resolve(globalRootPath.relativize(entry)));
 				STATE state = STATE.REMOTE;
 				if (isLocal) {
 					state = STATE.LOCAL;
@@ -97,7 +72,7 @@ public class FileService {
 					subFolder.setName(entry.getFileName().toString());
 					subFolder.setSize(Files.size(entry));
 					subFolder.setState(state);
-					subFolder.setPath(globalRootFolder.relativize(entry).toString());
+					subFolder.setPath(globalRootPath.relativize(entry).toString());
 					subFolder.setDateUpdate(new Date(Files.getLastModifiedTime(entry).toMillis()));
 					folderDto.getFolders().add(subFolder);
 
@@ -106,7 +81,7 @@ public class FileService {
 					fileDto.setName(entry.getFileName().toString());
 					fileDto.setSize(Files.size(entry));
 					fileDto.setState(state);
-					fileDto.setPath(globalRootFolder.relativize(entry).toString());
+					fileDto.setPath(globalRootPath.relativize(entry).toString());
 					fileDto.setDateUpdate(new Date(Files.getLastModifiedTime(entry).toMillis()));
 					folderDto.getFiles().add(fileDto);
 				}
@@ -118,7 +93,7 @@ public class FileService {
 	}
 
 	public Path getFileInGlobalFolder(String login, String path) throws ServiceException {
-		Path globalRootFolder = Paths.get(rootFolder).resolve(login).resolve(localGlobalFolder);
+		Path globalRootFolder = Paths.get(localRootFolder).resolve(login).resolve(localGlobalFolder);
 
 		Path file = globalRootFolder.resolve(path);
 		if (!Files.exists(file)) {
@@ -132,8 +107,8 @@ public class FileService {
 	}
 
 	public void delete(String login, String path) throws ServiceException {
-		Path localFile = Paths.get(rootFolder).resolve(login).resolve(localDecodedFolder).resolve(path);
-		Path remotePath = Paths.get(rootFolder).resolve(login).resolve(remoteDecodedFolder);
+		Path localFile = Paths.get(localRootFolder).resolve(login).resolve(localDecodedFolder).resolve(path);
+		Path remotePath = Paths.get(localRootFolder).resolve(login).resolve(remoteDecodedFolder);
 		Path remoteFile = remotePath.resolve(path);
 
 		if (Files.exists(localFile)) {
@@ -150,7 +125,7 @@ public class FileService {
 
 			String encodedPath = getEncodedPath(remotePath, path);
 
-			Path remoteEncodedPath = Paths.get(rootFolder).resolve(login).resolve(remoteEncodedFolder).resolve(encodedPath);
+			Path remoteEncodedPath = Paths.get(localRootFolder).resolve(login).resolve(remoteEncodedFolder).resolve(encodedPath);
 			if (Files.exists(remoteEncodedPath)) {
 				LOGGER.debug("Encoded path {} found, so delete it on ACD", remoteEncodedPath);
 				CommandLine cl = new CommandLine("acd_cli");
@@ -220,37 +195,44 @@ public class FileService {
 	}
 
 	@Async
-	private void saveToACD(String login, Path fileToSave) {
-		Path globalRootFolder = Paths.get(rootFolder).resolve(login).resolve(localGlobalFolder);
-		Path localRootFolder = Paths.get(rootFolder).resolve(login).resolve(localDecodedFolder);
+	private void saveToACD(String login, Path fileToSave) throws ServiceException {
+		Path globalRootFolder = Paths.get(localRootFolder).resolve(login).resolve(localGlobalFolder);
+		Path localDecodedRootFolder = Paths.get(localRootFolder).resolve(login).resolve(localDecodedFolder);
+		Path localEncodedRootFolder = Paths.get(localRootFolder).resolve(login).resolve(localEncodedFolder);
 
-		String encodedPath = getEncodedPath(localRootFolder, globalRootFolder.relativize(fileToSave).toString());
-		
-		LOGGER.debug("");
-		Path toUpload = acdEncodedPath.resolve(localEncodedPath.relativize(file)).getParent();
+		if (!Files.exists(localDecodedRootFolder)) {
+			throw new ServiceException("File {} doesn't exist in local folder {}", fileToSave, localDecodedRootFolder);
+		}
+
+		String encodedPath = getEncodedPath(localDecodedRootFolder, globalRootFolder.relativize(fileToSave).toString());
+
+		Path toUpload = localEncodedRootFolder.resolve(encodedPath);
+
+		if (!Files.exists(toUpload)) {
+			throw new ServiceException("Encoded file {} doesn't exist", toUpload);
+		}
 
 		CommandLine cmdLine = new CommandLine("acd_cli");
 		cmdLine.addArgument("upload");
-		cmdLine.addArgument(file.toAbsolutePath().toString());
 		cmdLine.addArgument(toUpload.toAbsolutePath().toString());
+		cmdLine.addArgument(encodedPath);
 
 		ByteArrayOutputStream outputStream = null;
 		int nbAttempt = 0;
 		while (nbAttempt < 3) {
 			try {
-				log(file, "Upload " + toUpload.toAbsolutePath().toString() + " attempt " + ++nbAttempt);
+				LOGGER.debug("Upload {} attempt {}", toUpload.toAbsolutePath().toString(), ++nbAttempt);
 				DefaultExecutor executor = new DefaultExecutor();
 				outputStream = new ByteArrayOutputStream();
 				PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
 				executor.setStreamHandler(streamHandler);
 				long start = Calendar.getInstance().getTimeInMillis();
 				executor.execute(cmdLine);
-				log(file, outputStream.toString() + "(" + (Calendar.getInstance().getTimeInMillis() - start) / 1000 + " sec)");
-				log(file, "Delete " + file.getFileName().toString());
-				Files.delete(file);
+				LOGGER.debug("Upload done in {} sec", (Calendar.getInstance().getTimeInMillis() - start) / 1000);
+				Files.delete(toUpload);
 				break;
 			} catch (Exception e) {
-				log(file, e.getMessage());
+				LOGGER.error("Unable to upload file {} retry {}/3", toUpload, nbAttempt);
 			} finally {
 				IOUtils.closeQuietly(outputStream);
 			}

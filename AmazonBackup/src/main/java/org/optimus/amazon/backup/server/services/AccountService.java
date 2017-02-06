@@ -23,47 +23,16 @@ import org.apache.commons.exec.PumpStreamHandler;
 import org.optimus.amazon.backup.server.exception.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AccountService {
+public class AccountService extends AbstractService {
 
 	private final static Logger LOGGER = LoggerFactory.getLogger(AccountService.class);
-
-	@Value("${folder.local.root}")
-	private String localRootFolder;
-
-	@Value("folder.remote.root")
-	private String remoteRootFolder;
-
-	@Value("${encfs.file}")
-	private String encfsFile;
-
-	@Value("${encfs.password}")
-	private String encfsPassword;
-
-	@Value("${folder.local.encoded}")
-	private String localEncodedFolder;
-
-	@Value("${folder.local.decoded}")
-	private String localDecodedFolder;
-
-	@Value("${folder.local.global}")
-	private String localGlobalFolder;
-
-	@Value("${folder.remote.encoded}")
-	private String remoteEncodedFolder;
-
-	@Value("${folder.remote.decoded}")
-	private String remoteDecodedFolder;
 
 	public boolean checkUserFolders(String login) throws ServiceException {
 		boolean ret = false;
 		Path rootPath = Paths.get(localRootFolder);
-		if (!Files.exists(rootPath)) {
-			throw new ServiceException("Folder {} doesn't exsit", rootPath);
-		}
 
 		Path userPath = rootPath.resolve(login);
 		Path localEncodedPath = userPath.resolve(localEncodedFolder);
@@ -123,8 +92,11 @@ public class AccountService {
 
 		LOGGER.debug("Execute : {}", cl.toString());
 
-		try {
-			LOGGER.info("Execution return : {}", new DefaultExecutor().execute(cl));
+		try (OutputStream os = new ByteArrayOutputStream();) {
+			DefaultExecutor executor = new DefaultExecutor();
+			ExecuteStreamHandler streamHandler = new PumpStreamHandler(os);
+			executor.setStreamHandler(streamHandler);
+			LOGGER.info("Execution return : {} - {}", executor.execute(cl), os.toString());
 		} catch (ExecuteException e) {
 			LOGGER.error(e.getMessage(), e);
 		} catch (IOException e) {
@@ -143,8 +115,11 @@ public class AccountService {
 
 		LOGGER.debug("Execute : {}", cl.toString());
 
-		try {
-			LOGGER.info("Execution return : {}", new DefaultExecutor().execute(cl));
+		try (OutputStream os = new ByteArrayOutputStream();) {
+			DefaultExecutor executor = new DefaultExecutor();
+			ExecuteStreamHandler streamHandler = new PumpStreamHandler(os);
+			executor.setStreamHandler(streamHandler);
+			LOGGER.info("Execution return : {} - {}", executor.execute(cl), os.toString());
 		} catch (ExecuteException e) {
 			LOGGER.error(e.getMessage(), e);
 		} catch (IOException e) {

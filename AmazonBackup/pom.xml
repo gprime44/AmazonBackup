@@ -15,10 +15,10 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<gwt.version>2.7.0</gwt.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<start-class>org.optimus.amazon.backup.server.AmazonBackupApplication</start-class>
 		<java.version>1.7</java.version>
+		<docker.image.prefix>springio</docker.image.prefix>
 	</properties>
 
 	<dependencies>
@@ -81,7 +81,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<finalName>amazonBackup</finalName>
+					<finalName>app</finalName>
 					<executable>true</executable>
 					<layout>ZIP</layout>
 				</configuration>

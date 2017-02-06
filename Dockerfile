@@ -2,7 +2,7 @@ FROM openjdk:7
 
 VOLUME /tmp
 VOLUME /data
-VOLUME /config
+VOLUME /code/target/config
 
 RUN apt-get update && apt-get install -y \
 python3 \
@@ -27,7 +27,4 @@ RUN ["mvn", "verify"]
 ADD src /code/src
 RUN ["mvn", "package"]
 
-RUN ["mv", "/code/target/app.jar", /app.jar]
-RUN ["rm", "-Rf", "/code", "/.m2"]
-
-CMD ["java", "-jar", "/app.jar"]
+CMD ["java", "-jar", "/code/target/app.jar"]

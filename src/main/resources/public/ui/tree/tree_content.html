@@ -1,0 +1,5 @@
+<div data-ng-controller="treeController">
+	<div style="margin: 5px;" data-ng-repeat="d in getChildren()"
+		data-ng-include="'ui/tree/tree_item.html'" data-drag="d"
+		data-dragStyle="drag" data-drop="d" data-dropStyle="drop"></div>
+</div>

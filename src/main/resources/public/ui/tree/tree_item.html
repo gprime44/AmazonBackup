@@ -1,0 +1,14 @@
+<i data-ng-show="canExpand(d)" class="glyphicon glyphicon-plus"
+	data-ng-click="expand(d)" style="cursor: pointer;"></i>
+
+<i data-ng-show="canCollapse(d)" class="glyphicon glyphicon-minus"
+	data-ng-click="collapse(d)" style="cursor: pointer;"></i>
+
+<span data-ng-bind="d.name" data-ng-click="openFolder(d)"
+	style="cursor: pointer;"></span>
+
+<div style="margin: 5px;">
+	<div data-ng-repeat="d in getChildren(d)"
+		data-ng-include="'ui/tree/tree_item.html'" data-drag="d"
+		data-dragStyle="drag" data-drop="d" data-dropStyle="drop"></div>
+</div>

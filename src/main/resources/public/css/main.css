@@ -1,0 +1,17 @@
+.tree-container {
+	
+}
+
+.drag {
+	border: 2px solid black;
+}
+
+.drop {
+	border: 2px solid black;
+}
+
+.folderButton {
+	cursor: pointer;
+	margin: 5px;
+	font-size: 18px;
+}
